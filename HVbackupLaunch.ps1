@@ -29,6 +29,11 @@ if (!($ini.ContainsKey("LOGSTORETIME"))) {
     echo("`t LOGSTORETIME=30")
     exit(0)
 }
+if (!($ini.ContainsKey("HVBACKUPEXE"))) { 
+    echo("Set HVBACKUPEXE parameter in {0}.`r`nExample:`r`n" -f $inifile)
+    echo("`t " + 'HVBACKUPEXE=c:\usr\hvbackup\HVBackup.exe --outputformat "{0}_{2:yyyyMMdd}.zip"')
+    exit(0)
+}
 if (!($ini.ContainsKey("KEEPBACKUPS"))) { 
     echo("Set KEEPBACKUPS parameter in {0}.`r`nRecomended minimum:`r`n" -f $inifile)
     echo("`t KEEPBACKUPS=1")
@@ -72,6 +77,13 @@ foreach ($item in $m) {
     }
 }
 
+# STEP 6. Backup for every virtual machine
+foreach ($item in $m) {
+    $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $p + ' -l ' + $item + ' 2>&1'
+    LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item, $cmd)
+    $cmdResult = invoke-expression $cmd
+    LogWrite($cmdResult | out-string)
+}
 
 
 LogWrite("INFO`tSuccessful Stop")
