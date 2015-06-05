@@ -78,12 +78,30 @@ foreach ($item in $m) {
 }
 
 # STEP 6. Backup for every virtual machine
+$totalSuccess = 0
+$totalSize = 0
+$msgSummary = ''
 foreach ($item in $m) {
     $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $p + ' -l ' + $item + ' 2>&1'
     LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item, $cmd)
     $cmdResult = invoke-expression $cmd
     LogWrite($cmdResult | out-string)
+    # get summary
+    $elapsedTime = $cmdResult | Select-String 'Elapsed time:' -SimpleMatch
+    if ($elapsedTime.ToString().Length -gt 0)
+    {
+        $file = Join-Path $p ($item + '_' + (get-date -format yyyyMMdd) + '.zip')
+        if (Test-Path $file) 
+        { 
+            $totalSuccess += 1
+            $totalSize += ((Get-Item $file).length/1GB)
+            $msgSummary += $file + "`t" + ("{0:N1}" -f ((Get-Item $file).length/1GB)) + "Gb`t" + $elapsedTime.ToString().Split(' ')[2] + "`n"
+        }
+    }
 }
 
+$msgSubject = ('HVbackup {0}. Success: {1}/{2}, Size: {3:N1} Gb'`
+    -f (Get-Item env:\Computername).Value, $totalSuccess, $m.Count, $totalSize)
+Add-Content $report ($msgSubject + "`n`n" + $msgSummary)
 
 LogWrite("INFO`tSuccessful Stop")
