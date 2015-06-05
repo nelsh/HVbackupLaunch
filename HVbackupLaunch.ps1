@@ -83,7 +83,7 @@ $totalSize = 0
 $msgSummary = ''
 foreach ($item in $m) {
     $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $p + ' -l ' + $item + ' 2>&1'
-    LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item, $cmd)
+    LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item.ToUpper(), $cmd)
     $cmdResult = invoke-expression $cmd
     LogWrite($cmdResult | out-string)
     # get summary
@@ -105,3 +105,14 @@ $msgSubject = ('HVbackup {0}. Success: {1}/{2}, Size: {3:N1} Gb'`
 Add-Content $report ($msgSubject + "`n`n" + $msgSummary)
 
 LogWrite("INFO`tSuccessful Stop")
+
+# STEP 6. (optional) Send summary report
+if ($ini.ContainsKey("MAILADDRESS") -and $ini.ContainsKey("MAILSERVER"))  {
+    $msg = New-Object Net.Mail.MailMessage($ini["MAILADDRESS"], $ini["MAILADDRESS"])
+    $msg.Subject = $msgSubject
+    $msg.Body = ((Get-Content $report) -join "`n")`
+         + "`n------------------------------------------------------`n`n"`
+         + ((Get-Content $log) -join "`n")
+    $smtp = New-Object Net.Mail.SmtpClient($ini["MAILSERVER"])
+    $smtp.Send($msg)
+}
