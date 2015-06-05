@@ -29,6 +29,11 @@ if (!($ini.ContainsKey("LOGSTORETIME"))) {
     echo("`t LOGSTORETIME=30")
     exit(0)
 }
+if (!($ini.ContainsKey("KEEPBACKUPS"))) { 
+    echo("Set KEEPBACKUPS parameter in {0}.`r`nRecomended minimum:`r`n" -f $inifile)
+    echo("`t KEEPBACKUPS=1")
+    exit(0)
+}
 
 # STEP 3. Remove old logfiles (YYYYMMDD.log)
 $logfiles = Get-ChildItem $ini["LOGPATH"] | Where-Object {$_.Name -match "^\d{8}.log$"}
@@ -56,6 +61,16 @@ New-Item -type file $report -force
 LogWrite("INFO`tStart")
 LogWrite("INFO`tBackup {0} virtual machine(s) ({1}) to {2}"`
     -f $m.count, ($m -join ', '), $p)
+
+# STEP 5. Remove very old backups
+foreach ($item in $m) {
+    $files = Get-ChildItem -Path (Join-Path $p ($item + "_*.*")) | sort desc
+    for ($j=[int]$ini["KEEPBACKUPS"]; $j -lt $files.Count; $j++)
+    {
+        LogWrite("INFO`tDelete {0}" -f $files[$j].FullName)
+        Remove-Item $files[$j].FullName
+    }
+}
 
 
 
