@@ -1,6 +1,6 @@
 ﻿# STEP 1. Read parameters from command line
-param($p,$m) 
-if (!$p -or !$m) {
+param($p,$l) 
+if (!$p -or !$l) {
     echo "HVbackup Launcher (http://hypervbackup.codeplex.com/)`n
 `tUsage:`n
 `tHVbackupLaunch -p <path/to/backup/folder> -m <list,of,virtuals,machines>`n`n"
@@ -43,9 +43,9 @@ if (!($ini.ContainsKey("KEEPBACKUPS"))) {
 # STEP 3. Remove old logfiles (YYYYMMDD.log)
 $logfiles = Get-ChildItem $ini["LOGPATH"] | Where-Object {$_.Name -match "^\d{8}.log$"}
 $logstoredate = (Get-Date).AddMonths(-$ini["LOGSTORETIME"]).ToString('yyyyMMdd')
-foreach ( $l in $logfiles ) {
-    if ( ($l.Name).Split('.')[0] -lt $logstoredate ) {
-        Remove-Item $l.FullName
+foreach ( $log in $logfiles ) {
+    if ( ($log.Name).Split('.')[0] -lt $logstoredate ) {
+        Remove-Item $log.FullName
     }
 }
 
@@ -65,10 +65,10 @@ New-Item -type file $report -force
 
 LogWrite("INFO`tStart")
 LogWrite("INFO`tBackup {0} virtual machine(s) ({1}) to {2}"`
-    -f $m.count, ($m -join ', '), $p)
+    -f $l.count, ($l -join ', '), $p)
 
 # STEP 5. Remove very old backups
-foreach ($item in $m) {
+foreach ($item in $l) {
     $files = Get-ChildItem -Path (Join-Path $p ($item + "_*.*")) | sort desc
     for ($j=[int]$ini["KEEPBACKUPS"]; $j -lt $files.Count; $j++)
     {
@@ -81,7 +81,7 @@ foreach ($item in $m) {
 $totalSuccess = 0
 $totalSize = 0
 $msgSummary = ''
-foreach ($item in $m) {
+foreach ($item in $l) {
     $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $p + ' -l ' + $item + ' 2>&1'
     LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item.ToUpper(), $cmd)
     $cmdResult = invoke-expression $cmd
@@ -101,7 +101,7 @@ foreach ($item in $m) {
 }
 
 $msgSubject = ('HVbackup {0}. Success: {1}/{2}, Size: {3:N1} Gb'`
-    -f (Get-Item env:\Computername).Value, $totalSuccess, $m.Count, $totalSize)
+    -f (Get-Item env:\Computername).Value, $totalSuccess, $l.Count, $totalSize)
 Add-Content $report ($msgSubject + "`n`n" + $msgSummary)
 
 LogWrite("INFO`tSuccessful Stop")
@@ -111,8 +111,9 @@ if ($ini.ContainsKey("MAILADDRESS") -and $ini.ContainsKey("MAILSERVER"))  {
     $msg = New-Object Net.Mail.MailMessage($ini["MAILADDRESS"], $ini["MAILADDRESS"])
     $msg.Subject = $msgSubject
     $msg.Body = ((Get-Content $report) -join "`n")`
-         + "`n------------------------------------------------------`n`n"`
+         + "`n----------------------- Detailed Log -------------------------------`n`n"`
          + ((Get-Content $log) -join "`n")
     $smtp = New-Object Net.Mail.SmtpClient($ini["MAILSERVER"])
     $smtp.Send($msg)
+    LogWrite("INFO`t... sent summary")
 }
