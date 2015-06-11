@@ -1,9 +1,9 @@
 ﻿# STEP 1. Read parameters from command line
-param($p,$l) 
-if (!$p -or !$l) {
+param($o,$l) 
+if (!$o -or !$l) {
     echo "HVbackup Launcher (http://hypervbackup.codeplex.com/)`n
 `tUsage:`n
-`tHVbackupLaunch -p <path/to/backup/folder> -m <list,of,virtuals,machines>`n`n"
+`tHVbackupLaunch -o <path/to/backup/folder> -l <list,of,virtuals,machines>`n`n"
     exit(0)
 }
 if (!(Test-Path $p)) {
@@ -69,7 +69,7 @@ LogWrite("INFO`tBackup {0} virtual machine(s) ({1}) to {2}"`
 
 # STEP 5. Remove very old backups
 foreach ($item in $l) {
-    $files = Get-ChildItem -Path (Join-Path $p ($item + "_*.*")) | sort desc
+    $files = Get-ChildItem -Path (Join-Path $o ($item + "_*.*")) | sort desc
     for ($j=[int]$ini["KEEPBACKUPS"]; $j -lt $files.Count; $j++)
     {
         LogWrite("INFO`tDelete {0}" -f $files[$j].FullName)
@@ -82,7 +82,7 @@ $totalSuccess = 0
 $totalSize = 0
 $msgSummary = ''
 foreach ($item in $l) {
-    $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $p + ' -l ' + $item + ' 2>&1'
+    $cmd =  $ini["HVBACKUPEXE"] + ' -o ' + $o + ' -l ' + $item + ' 2>&1'
     LogWrite("INFO`tBackup {0}. Run: {1}`n" -f $item.ToUpper(), $cmd)
     $cmdResult = invoke-expression $cmd
     LogWrite($cmdResult | out-string)
