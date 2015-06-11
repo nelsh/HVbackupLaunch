@@ -11,11 +11,11 @@
 
 Execute from command line
 
-    powershell.exe -ExecutionPolicy Bypass -Command "c:/hvbackup/HVbackupLaunch.ps1" -p f:/backup -l server-one,server-two 
+    powershell.exe -ExecutionPolicy Bypass -Command "c:/hvbackup/HVbackupLaunch.ps1" -o f:/backup -l server-one,server-two 
 
 where
 
- * -p - Backup output folder
+ * -o - Backup output folder
  * -l - List of VMs to backup, comma separated
 
 ## Example report  ##
