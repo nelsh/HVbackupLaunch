@@ -6,7 +6,7 @@ if (!$o -or !$l) {
 `tHVbackupLaunch -o <path/to/backup/folder> -l <list,of,virtuals,machines>`n`n"
     exit(0)
 }
-if (!(Test-Path $p)) {
+if (!(Test-Path $o)) {
     echo("Backup folder {0} not exist.`r`n" -f $p)
     exit(0)
 }
@@ -90,7 +90,7 @@ foreach ($item in $l) {
     $elapsedTime = $cmdResult | Select-String 'Elapsed time:' -SimpleMatch
     if ($elapsedTime.ToString().Length -gt 0)
     {
-        $file = Join-Path $p ($item + '_' + (get-date -format yyyyMMdd) + '.zip')
+        $file = Join-Path $o ($item + '_' + (get-date -format yyyyMMdd) + '.zip')
         if (Test-Path $file) 
         { 
             $totalSuccess += 1
