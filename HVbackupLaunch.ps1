@@ -41,13 +41,9 @@ if (!($ini.ContainsKey("KEEPBACKUPS"))) {
 }
 
 # STEP 3. Remove old logfiles (YYYYMMDD.log)
-$logfiles = Get-ChildItem $ini["LOGPATH"] | Where-Object {$_.Name -match "^\d{8}.log$"}
-$logstoredate = (Get-Date).AddMonths(-$ini["LOGSTORETIME"]).ToString('yyyyMMdd')
-foreach ( $log in $logfiles ) {
-    if ( ($log.Name).Split('.')[0] -lt $logstoredate ) {
-        Remove-Item $log.FullName
-    }
-}
+Get-ChildItem $ini["LOGPATH"] | Where-Object {$_.Name -match "^\d{8}.log$"}`
+    | ? {$_.PSIsContainer -eq $false -and $_.lastwritetime -lt (get-date).adddays(-$ini["LOGSTORETIME"])}`
+    | Remove-Item -Force
 
 # STEP 4. Create logfile (
 $log = Join-Path $ini["LOGPATH"] ( (Get-Date).ToString('yyyyMMdd') + ".log" )
