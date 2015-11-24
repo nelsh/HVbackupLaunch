@@ -109,7 +109,19 @@ if ($ini.ContainsKey("MAILADDRESS") -and $ini.ContainsKey("MAILSERVER"))  {
     $msg.Body = ((Get-Content $report) -join "`n")`
          + "`n----------------------- Detailed Log -------------------------------`n`n"`
          + ((Get-Content $log) -join "`n")
-    $smtp = New-Object Net.Mail.SmtpClient($ini["MAILSERVER"])
+    $smtp = New-Object Net.Mail.SmtpClient("")
+    if ($ini["MAILSERVER"].Contains(":")) {
+        $mailserver = $ini["MAILSERVER"].Split(":")
+        $smtp.Host = $mailserver[0]
+        $smtp.Port = $mailserver[1]
+    }
+    else {
+        $smtp.Host = $ini["MAILSERVER"]
+    }
+    #$smtp.EnableSsl = $true 
+    if ($ini.ContainsKey("MAILUSER") -and $ini.ContainsKey("MAILPASSWORD"))  {
+        $smtp.Credentials = New-Object System.Net.NetworkCredential($ini["MAILUSER"], $ini["MAILPASSWORD"]); 
+    }
     $smtp.Send($msg)
     LogWrite("INFO`t... sent summary")
 }
