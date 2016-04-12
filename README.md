@@ -87,3 +87,7 @@
     Elapsed time: 01:54:08.422
 
     05:03:19 INFO	Successful Stop
+
+## Credits ##
+
+[Jimshark](https://github.com/Jimshark)
