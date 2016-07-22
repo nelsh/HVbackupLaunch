@@ -16,6 +16,9 @@
 
 Begin {
 
+# fix for PS 2.0
+if(!$PSScriptRoot){ $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent }
+
 # STEP 2. Read parameters from ini-file and set default values
 $inifile = Join-Path $PSScriptRoot ( $MyInvocation.MyCommand.Name.Replace("ps1", "ini") )
 if (!(Test-Path $inifile)) {
