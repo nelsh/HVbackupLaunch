@@ -9,14 +9,19 @@
 
 ## Usage ##
 
-Execute from command line
+1. Execute from command line
 
-    powershell.exe -ExecutionPolicy Bypass -Command "c:/hvbackup/HVbackupLaunch.ps1" -o f:/backup -l server-one,server-two 
+        powershell.exe -ExecutionPolicy Bypass -Command "c:/hvbackup/HVbackupLaunch.ps1" -o f:/backup -l server-one,server-two 
 
-where
+    where
 
- * -o - Backup output folder
- * -l - List of VMs to backup, comma separated
+   * -o or -path : Backup output folder
+   * -l or -name : List of VMs to backup, comma separated
+
+2. Execute from Powershell console:
+
+        get-vm | select Name | "HVBackupLaunch.ps1" -Path %BCKPATH%" -verbose
+
 
 ## Example report  ##
 
@@ -82,3 +87,7 @@ where
     Elapsed time: 01:54:08.422
 
     05:03:19 INFO	Successful Stop
+
+## Credits ##
+
+[Jimshark](https://github.com/Jimshark)
