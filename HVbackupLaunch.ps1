@@ -44,6 +44,8 @@ if (!($ini.ContainsKey("KEEPBACKUPS"))) {
     echo("`t KEEPBACKUPS=1")
     exit(0)
 }
+$startdate = get-date -format yyyyMMdd
+
 Write-Verbose "END: STEP 2. Read parameters from ini-file and set default values"
 
 # STEP 3. Remove old logfiles (YYYYMMDD.log)
@@ -53,7 +55,7 @@ Get-ChildItem $ini["LOGPATH"] | Where-Object {$_.Name -match "^\d{8}.log$"}`
 Write-Verbose "END: STEP 3. Remove old logfiles (YYYYMMDD.log)"
 
 # STEP 4. Create logfile 
-$log = Join-Path $ini["LOGPATH"] ( (Get-Date).ToString('yyyyMMdd') + ".log" )
+$log = Join-Path $ini["LOGPATH"] ( $startdate + ".log" )
 if (!(Test-Path $log)) {
     New-Item -type file $log -force
 }
@@ -117,7 +119,7 @@ foreach ($Name in $VMList) {
 	$elapsedTime = $cmdResult | Select-String 'Elapsed time:' -SimpleMatch | ForEach-Object {$_ -replace "Elapsed time: ", ""} 
     if ($elapsedTime.ToString().Length -gt 0)
     {
-        $file = Join-Path $Path ($Name + '_' + (get-date -format yyyyMMdd) + '.zip')
+        $file = Join-Path $Path ($Name + '_' + $startdate + '.zip')
         if (Test-Path $file) 
         { 
             $totalVM = $totalVM + 1
